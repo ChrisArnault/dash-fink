@@ -1,0 +1,6 @@
+*.pyc
+cache/
+cache-directory/
+semaphore.txt
+.idea
+
