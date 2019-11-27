@@ -1,14 +1,21 @@
 
-from pyspark import SparkContext
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 
+import sys
 import random
 
+rows = 100
 
 if __name__ == "__main__":
     spark = SparkSession.builder.appName("Delta").getOrCreate()
+
+    for i, arg in enumerate(sys.argv[1:]):
+        a = arg.split("=")
+        print(i, arg, a)
+        if a[0] == "rows":
+            rows = int(a[1])
 
     ra_offset = 40.0
     ra_field = 40.0
@@ -26,7 +33,7 @@ if __name__ == "__main__":
     def z_value():
       return z_offset + random.random()*z_field
 
-    values = [(ra_value(), dec_value(), z_value()) for i in range(100)]
+    values = [(ra_value(), dec_value(), z_value()) for i in range(rows)]
     df = spark.createDataFrame(values, ['ra','dec', 'z'])
     df.show()
 
