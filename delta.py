@@ -36,25 +36,26 @@ if __name__ == "__main__":
     def z_value():
       return z_offset + random.random()*z_field
 
+    print("============= create the DF with ra|dec|z")
     values = [(ra_value(), dec_value(), z_value()) for i in range(rows)]
     df = spark.createDataFrame(values, ['ra','dec', 'z'])
     df.repartition(1000)
-    df.show()
+    # df.show()
 
     flux_field = 10.0
 
+    print("============= add the column for flux")
     df = df.withColumn('flux', flux_field * rand())
 
-    for c in "azertyuiopqsdfghjklmwxcvbn1234567890":
+    names = "azertyuiopqsdfghjklmwxcvbn1234567890"
+    print("============= add {} columns".format(len(names)))
+    for c in names:
         df = df.withColumn(c, rand())
 
-    df.withColumn('SN', when(df.flux > 8, True).otherwise(False)).show()
+    print("============= add a column for SN tags")
+    df.withColumn('SN', when(df.flux > 8, True).otherwise(False))
 
-    flux_field = 10.0
-
-    df = df.withColumn('flux', flux_field * rand())
-
-    df.withColumn('SN', when(df.flux > 8, True).otherwise(False)).show()
+    df.show()
     print("count = {} partitions={}".format(df.count(), df.rdd.getNumPartitions()))
 
 
