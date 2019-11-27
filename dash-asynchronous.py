@@ -61,7 +61,6 @@ def display_status(intervals):
     locked = semaphore.is_locked()
     print("...from interval intervals={} locked={}".format(intervals, locked))
     return 'Running...' if semaphore.is_locked() else 'Free'
-    ### return 'Running...{}'.format(datetime.datetime.now())
 
 
 @app.callback(
@@ -69,7 +68,8 @@ def display_status(intervals):
     [Input('button', 'n_clicks')])
 def run_process(clicks):
     print("from button clicks={}".format(clicks))
-    return 'Finished at {}'.format(long_process()) if not clicks is None else ''
+    return 'Finished at {}'.format(long_process()) if clicks is not None else ''
+
 
 if __name__ == '__main__':
     # app.run_server(debug=True, processes=5, threaded=False)
