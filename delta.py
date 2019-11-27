@@ -1,6 +1,6 @@
 
 from pyspark import SparkContext
-from pyspark.sql.session import *
+from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
 
@@ -8,8 +8,7 @@ import random
 
 
 if __name__ == "__main__":
-    sc = SparkContext(appName="Delta")
-    spark = SparkSession(sc)
+    spark = SparkSession.builder.appName("Delta").getOrCreate()
 
     ra_offset = 40.0
     ra_field = 40.0
@@ -42,3 +41,5 @@ if __name__ == "__main__":
     df = df.withColumn('flux', flux_field * rand())
 
     df.withColumn('SN', when(df.flux > 8, True).otherwise(False)).show()
+
+    spark.stop()
