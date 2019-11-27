@@ -1,13 +1,15 @@
 
 from pyspark import SparkContext
-import random
+from pyspark.sql.session import *
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
+
+import random
 
 
 if __name__ == "__main__":
     sc = SparkContext(appName="Delta")
-    spark = pyspark.sql.session.SparkSession(sc)
+    spark = SparkSession(sc)
 
     ra_offset = 40.0
     ra_field = 40.0
