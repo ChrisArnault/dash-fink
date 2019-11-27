@@ -45,6 +45,9 @@ if __name__ == "__main__":
 
     df = df.withColumn('flux', flux_field * rand())
 
+    for c in "azertyuiopqsdfghjklmwxcvbn1234567890":
+        df = df.withColumn(c, rand())
+
     df.withColumn('SN', when(df.flux > 8, True).otherwise(False)).show()
 
     flux_field = 10.0
