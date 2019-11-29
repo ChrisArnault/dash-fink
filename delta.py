@@ -44,6 +44,7 @@ if __name__ == "__main__":
 
     batches = int(rows/1000)
     for j in range(batches):
+        print("batch #{}".format(j))
         values = [(ra_value(), dec_value(), z_value()) for i in range(rows)]
         df = spark.createDataFrame(values, ['ra','dec', 'z'])
         if j == 0:
