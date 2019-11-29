@@ -17,7 +17,11 @@ web ui -> https://wuip.lal.in2p3.fr:24444/
 
 ###pyspark --packages io.delta:delta-core_2.11:0.4.0,org.influxdb:influxdb-java:2.14 --master spark://134.158.75.222:7077  --driver-memory 29g --total-executor-cores 85 --executor-cores 17 --executor-memory 29g
 pyspark --packages io.delta:delta-core_2.11:0.4.0,org.influxdb:influxdb-java:2.14 --master yarn  --driver-memory 29g --total-executor-cores 85 --executor-cores 17 --executor-memory 29g
+
 pyspark --packages io.delta:delta-core_2.11:0.4.0,org.influxdb:influxdb-java:2.14 --master mesos://vm-75063.lal.in2p3.fr:5050  --driver-memory 29g --total-executor-cores 85 --executor-cores 17 --executor-memory 29g
+
+
+export HADOOP_CLIENT_OPTS="$HADOOP_CLIENT_OPTS -Xmx5g"
 
 org.influxdb:influxdb-java:2.14
 

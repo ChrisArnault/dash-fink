@@ -2,14 +2,14 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import *
 from pyspark.sql.types import *
-
+from delta.tables import *
 
 import sys
 import os
 import random
 
-rows = 1000
-dest = "/user/chris.arnault/xyz"
+rows = 100
+dest = "/user/chris.arnault/xyz2"
 
 if __name__ == "__main__":
     spark = SparkSession.builder.appName("Delta").getOrCreate()
@@ -38,23 +38,15 @@ if __name__ == "__main__":
     def z_value():
       return z_offset + random.random()*z_field
 
-    os.system("hdfs dfs -rm -r -f {}".format(dest))
-
     print("============= create the DF with ra|dec|z")
+    values = [(ra_value(), dec_value(), z_value()) for i in range(rows)]
+    df = spark.createDataFrame(values, ['ra','dec', 'z'])
+    df.repartition(1000)
 
-    batches = int(rows/1000)
-    for j in range(batches):
-        values = [(ra_value(), dec_value(), z_value()) for i in range(rows)]
-        df = spark.createDataFrame(values, ['ra','dec', 'z'])
-        if j == 0:
-            df.write.format("delta").partitionBy("ra").save(dest)
-        else:
-            df.write.format("delta").partitionBy("ra").mode("append").save(dest)
-        print("j = {}".format(j))
+    os.system("hdfs dfs -rm -r -f {}".format(dest))
+    df.write.format("delta").save(dest)
 
-    df.show()
-
-    exit()
+    # df.show()
 
     flux_field = 10.0
 
@@ -63,21 +55,33 @@ if __name__ == "__main__":
 
     df.write.format("delta").mode("overwrite").option("mergeSchema", "true").save(dest)
 
+    """
     names = "azertyuiopqsdfghjklmwxcvbn1234567890"
     print("============= add {} columns".format(len(names)))
     for c in names:
         df = df.withColumn(c, rand())
 
     df.write.format("delta").mode("overwrite").option("mergeSchema", "true").save(dest)
+    """
 
     print("============= add a column for SN tags")
     df.withColumn('SN', when(df.flux > 8, True).otherwise(False))
 
-    df.write.format("delta").mode("overwrite").option("mergeSchema", "true").save(dest)
+    deltaTable = DeltaTable.forPath(spark, dest)
 
-    os.system("hdfs dfs -du -h {}".format(dest))
+    deltaTable.alias("old").merge(
+        updatesDF.alias("updates"),
+        "events.eventId = updates.eventId") \
+        .whenMatchedUpdate(set={"data": "updates.data"}) \
+        .whenNotMatchedInsert(values=
+    {
+        "date": "updates.date",
+        "eventId": "updates.eventId",
+        "data": "updates.data"
+    }
+    ) \
+        .execute()
 
-    df = spark.read.format("delta").load(dest)
     df.show()
     print("count = {} partitions={}".format(df.count(), df.rdd.getNumPartitions()))
 
