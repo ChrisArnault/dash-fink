@@ -10,6 +10,7 @@ import random
 
 rows = 1000
 dest = "/user/chris.arnault/xyz"
+batch_size = 1000
 
 if __name__ == "__main__":
     spark = SparkSession.builder.appName("Delta").getOrCreate()
@@ -21,6 +22,10 @@ if __name__ == "__main__":
         if a[0] == "rows":
             rows = int(a[1])
             print("rows={}".format(rows))
+        if a[0] == "batch_size":
+            batch_size = int(a[1])
+            print("batch_size={}".format(batch_size))
+
 
     ra_offset = 40.0
     ra_field = 40.0
@@ -42,19 +47,19 @@ if __name__ == "__main__":
 
     print("============= create the DF with ra|dec|z")
 
-    batches = int(rows/1000)
-    for j in range(batches):
-        print("batch #{}".format(j))
-        values = [(ra_value(), dec_value(), z_value()) for i in range(rows)]
+    batches = int(rows/batch_size)
+    for batch in range(batches):
+        print("batch #{}".format(batch))
+        values = [(ra_value(), dec_value(), z_value()) for i in range(batch_size)]
         df = spark.createDataFrame(values, ['ra','dec', 'z'])
-        if j == 0:
+        if batch == 0:
             df.write.format("delta").partitionBy("ra").save(dest)
         else:
             df.write.format("delta").partitionBy("ra").mode("append").save(dest)
-        print("j = {}".format(j))
 
     df.show()
 
+    spark.stop()
     exit()
 
     flux_field = 10.0
