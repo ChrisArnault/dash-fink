@@ -53,8 +53,10 @@ if __name__ == "__main__":
         values = [(ra_value(), dec_value(), z_value()) for i in range(batch_size)]
         df = spark.createDataFrame(values, ['ra','dec', 'z'])
         if batch == 0:
+            df.coalesce(1000)
             df.write.format("delta").partitionBy("ra").save(dest)
         else:
+            df.coalesce(1000)
             df.write.format("delta").partitionBy("ra").mode("append").save(dest)
 
     df.show()
