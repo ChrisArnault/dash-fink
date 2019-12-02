@@ -54,22 +54,24 @@ if __name__ == "__main__":
         df = spark.createDataFrame(values, ['ra','dec', 'z'])
         if batch == 0:
             df.coalesce(1000)
-            df.write.format("delta").partitionBy("ra").save(dest)
+            ### df.write.format("delta").partitionBy("ra").save(dest)
+            df.write.format("delta").save(dest)
         else:
             df.coalesce(1000)
-            df.write.format("delta").partitionBy("ra").mode("append").save(dest)
-
-    df.show()
-
-    spark.stop()
-    exit()
+            ### df.write.format("delta").partitionBy("ra").mode("append").save(dest)
+            df.write.format("delta").mode("append").save(dest)
 
     flux_field = 10.0
 
     print("============= add the column for flux")
     df = df.withColumn('flux', flux_field * rand())
 
-    df.write.format("delta").mode("overwrite").option("mergeSchema", "true").save(dest)
+    df.write.format("delta").partitionBy("ra").mode("overwrite").option("mergeSchema", "true").save(dest)
+    df.show()
+
+    spark.stop()
+    exit()
+
 
     names = "azertyuiopqsdfghjklmwxcvbn1234567890"
     print("============= add {} columns".format(len(names)))
