@@ -21,10 +21,8 @@ if __name__ == "__main__":
         print(i, arg, a)
         if a[0] == "rows":
             rows = int(a[1])
-            print("rows={}".format(rows))
         if a[0] == "batch_size":
             batch_size = int(a[1])
-            print("batch_size={}".format(batch_size))
 
 
     ra_offset = 40.0
@@ -47,17 +45,26 @@ if __name__ == "__main__":
 
     print("============= create the DF with ra|dec|z")
 
+    factor = 1000000
+
+    print("factor={}".format(factor))
+    print("rows={}".format(rows))
+    print("batch_size={}".format(batch_size))
+
+    batch_size *= factor
+    rows *= factor
+
     batches = int(rows/batch_size)
     for batch in range(batches):
         print("batch #{}".format(batch))
         values = [(ra_value(), dec_value(), z_value()) for i in range(batch_size)]
         df = spark.createDataFrame(values, ['ra','dec', 'z'])
         if batch == 0:
-            df.coalesce(1000)
+            # df.coalesce(10000)
             ### df.write.format("delta").partitionBy("ra").save(dest)
             df.write.format("delta").save(dest)
         else:
-            df.coalesce(1000)
+            # df.coalesce(10000)
             ### df.write.format("delta").partitionBy("ra").mode("append").save(dest)
             df.write.format("delta").mode("append").save(dest)
 
@@ -65,9 +72,11 @@ if __name__ == "__main__":
 
     print("============= add the column for flux")
     df = df.withColumn('flux', flux_field * rand())
+    df.write.format("delta").mode("append").save(dest)
 
-    df.write.format("delta").partitionBy("ra").mode("overwrite").option("mergeSchema", "true").save(dest)
-    df.show()
+
+    # df.write.format("delta").partitionBy("ra").mode("overwrite").option("mergeSchema", "true").save(dest)
+    # df.show()
 
     spark.stop()
     exit()
