@@ -92,10 +92,13 @@ if __name__ == "__main__":
     batches = int(rows/batch_size)
     for batch in range(batches):
         print("batch #{}".format(batch))
+
+        s = Stepper()
         values = [(ra_value(), dec_value(), z_value()) for i in range(batch_size)]
         df = spark.createDataFrame(values, ['ra','dec', 'z'])
         df = df.cache()
         df.count()
+        s.show_step("building the dataframe")
 
         s = Stepper()
         if batch == 0:
