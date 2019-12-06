@@ -62,17 +62,17 @@ if __name__ == "__main__":
         if batch == 0:
             # df.coalesce(10000)
             ### df.write.format("delta").partitionBy("ra").save(dest)
-            df.write.format("delta").save(dest)
+            df.write.format("parquet").save(dest)
         else:
             # df.coalesce(10000)
             ### df.write.format("delta").partitionBy("ra").mode("append").save(dest)
-            df.write.format("delta").mode("append").save(dest)
+            df.write.format("parquet").mode("append").save(dest)
 
     flux_field = 10.0
 
     print("============= add the column for flux")
     df = df.withColumn('flux', flux_field * rand())
-    df.write.format("delta").mode("append").save(dest)
+    df.write.format("parquet").mode("append").save(dest)
 
 
     # df.write.format("delta").partitionBy("ra").mode("overwrite").option("mergeSchema", "true").save(dest)
