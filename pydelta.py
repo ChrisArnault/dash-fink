@@ -8,9 +8,9 @@ import sys
 import os
 import random
 
-rows = 1000
+rows = 100
 dest = "/user/chris.arnault/xyz"
-batch_size = 1000
+batch_size = 1
 
 import time
 
@@ -74,7 +74,9 @@ if __name__ == "__main__":
     def z_value():
       return z_offset + random.random()*z_field
 
+    s = Stepper()
     os.system("hdfs dfs -rm -r -f {}".format(dest))
+    s.show_step("erase the file")
 
     print("============= create the DF with ra|dec|z")
 
@@ -92,6 +94,10 @@ if __name__ == "__main__":
         print("batch #{}".format(batch))
         values = [(ra_value(), dec_value(), z_value()) for i in range(batch_size)]
         df = spark.createDataFrame(values, ['ra','dec', 'z'])
+        df = df.cache()
+        df.count()
+
+        s = Stepper()
         if batch == 0:
             # df.coalesce(10000)
             ### df.write.format("delta").partitionBy("ra").save(dest)
@@ -100,6 +106,7 @@ if __name__ == "__main__":
             # df.coalesce(10000)
             ### df.write.format("delta").partitionBy("ra").mode("append").save(dest)
             df.write.format("parquet").mode("append").save(dest)
+        s.show_step("Write block")
 
     flux_field = 10.0
 
